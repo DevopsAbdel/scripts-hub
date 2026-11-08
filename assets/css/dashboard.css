@@ -1,0 +1,580 @@
+/* ==========================================================================
+   scripts-hub - Dashboard local
+   Complète report.css : mise en page, actions, badges, console et modales.
+   ========================================================================== */
+
+body.dashboard {
+    background:
+        radial-gradient(1200px 500px at 15% -10%, rgba(88, 166, 255, 0.10), transparent 60%),
+        radial-gradient(900px 400px at 100% 0%, rgba(163, 113, 247, 0.08), transparent 55%),
+        var(--hub-bg);
+    background-attachment: fixed;
+}
+
+.dashboard main {
+    max-width: 1360px;
+    margin: 0 auto;
+}
+
+.dashboard .hub-header {
+    max-width: 1360px;
+    margin: 0 auto 24px;
+}
+
+.dashboard .hub-footer {
+    max-width: 1360px;
+    margin: 8px auto 0;
+}
+
+/* --------------------------------------------------------------------------
+   Identité
+   -------------------------------------------------------------------------- */
+
+.hub-identity {
+    min-width: 0;
+}
+
+.hub-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.hub-brand-mark {
+    position: relative;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #58A6FF, #A371F7);
+    box-shadow: 0 8px 24px rgba(88, 166, 255, 0.25);
+}
+
+.hub-brand-mark::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border-radius: 4px;
+    border: 2px solid #0D1117;
+    border-bottom-width: 5px;
+}
+
+.hub-brand h1 {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    font-size: clamp(22px, 2.4vw, 28px);
+    letter-spacing: -0.02em;
+}
+
+.hub-brand-suffix {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--hub-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Boutons et badges
+   -------------------------------------------------------------------------- */
+
+.btn-danger-ghost:hover {
+    border-color: var(--hub-danger);
+    color: var(--hub-danger);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-small {
+    padding: 3px 9px;
+    font-size: 12px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--hub-border);
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--hub-muted);
+    background: rgba(139, 148, 158, 0.08);
+}
+
+.badge-html {
+    color: #58A6FF;
+    border-color: rgba(88, 166, 255, 0.45);
+    background: rgba(88, 166, 255, 0.10);
+}
+
+.badge-csv {
+    color: #3FB950;
+    border-color: rgba(63, 185, 80, 0.45);
+    background: rgba(63, 185, 80, 0.10);
+}
+
+.badge-json {
+    color: #D29922;
+    border-color: rgba(210, 153, 34, 0.45);
+    background: rgba(210, 153, 34, 0.10);
+}
+
+.badge-ok {
+    color: #3FB950;
+    border-color: rgba(63, 185, 80, 0.45);
+    background: rgba(63, 185, 80, 0.10);
+}
+
+.badge-warn {
+    color: #D29922;
+    border-color: rgba(210, 153, 34, 0.45);
+    background: rgba(210, 153, 34, 0.10);
+}
+
+.badge-danger {
+    color: #F85149;
+    border-color: rgba(248, 81, 73, 0.45);
+    background: rgba(248, 81, 73, 0.10);
+}
+
+/* --------------------------------------------------------------------------
+   KPI
+   -------------------------------------------------------------------------- */
+
+.dashboard .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+}
+
+.dashboard .kpi {
+    padding: 14px 16px;
+}
+
+.dashboard .kpi-value {
+    font-size: clamp(19px, 1.8vw, 25px);
+}
+
+/* --------------------------------------------------------------------------
+   Cartes
+   -------------------------------------------------------------------------- */
+
+.dashboard .card-head .hint {
+    color: var(--hub-muted);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.dashboard .toolbar-inline {
+    position: static;
+    margin: 0;
+    padding: 10px 18px;
+    border: 0;
+    border-bottom: 1px solid var(--hub-border);
+    border-radius: 0;
+    background: var(--hub-surface);
+    backdrop-filter: none;
+}
+
+/* --------------------------------------------------------------------------
+   Actions (scripts)
+   -------------------------------------------------------------------------- */
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
+    padding: 16px 18px;
+}
+
+.action-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 18px 14px;
+    border: 1px solid var(--hub-border);
+    border-radius: var(--hub-radius);
+    background: linear-gradient(180deg, rgba(88, 166, 255, 0.045), transparent 55%), var(--hub-surface);
+    overflow: hidden;
+    transition: border-color .15s ease, transform .12s ease;
+}
+
+.action-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--hub-primary);
+}
+
+.action-card.is-unavailable::before {
+    background: var(--hub-warning);
+}
+
+.action-card:hover {
+    border-color: rgba(88, 166, 255, 0.55);
+    transform: translateY(-1px);
+}
+
+.action-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.action-head h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
+    color: var(--hub-text);
+}
+
+.action-card p {
+    margin: 0;
+    color: var(--hub-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    flex: 1 1 auto;
+}
+
+.action-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.action-foot code {
+    font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+    font-size: 11px;
+    color: var(--hub-muted);
+    background: rgba(1, 4, 9, 0.35);
+    border: 1px solid var(--hub-border);
+    border-radius: 6px;
+    padding: 3px 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.action-note {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--hub-warning);
+    font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Console d'exécution
+   -------------------------------------------------------------------------- */
+
+.run-card {
+    border-color: rgba(88, 166, 255, 0.45);
+    box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.12), var(--hub-shadow);
+}
+
+.run-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hub-primary);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.run-status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--hub-primary);
+    animation: hub-pulse 1.1s ease-in-out infinite;
+}
+
+.run-status.is-done {
+    color: var(--hub-success);
+}
+
+.run-status.is-done::before {
+    background: var(--hub-success);
+    animation: none;
+}
+
+.run-status.is-error {
+    color: var(--hub-danger);
+}
+
+.run-status.is-error::before {
+    background: var(--hub-danger);
+    animation: none;
+}
+
+@keyframes hub-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .35; transform: scale(.8); }
+}
+
+.run-body {
+    padding: 14px 18px 18px;
+}
+
+.run-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-bottom: 10px;
+    color: var(--hub-muted);
+    font-size: 12px;
+}
+
+.run-meta strong {
+    color: var(--hub-text);
+}
+
+.console {
+    margin: 0;
+    max-height: 320px;
+    overflow: auto;
+    padding: 12px 14px;
+    border: 1px solid var(--hub-border);
+    border-radius: 8px;
+    background: #010409;
+    color: #C9D1D9;
+    font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* --------------------------------------------------------------------------
+   Tableaux
+   -------------------------------------------------------------------------- */
+
+.dashboard table.grid td {
+    vertical-align: middle;
+}
+
+.dashboard .actions-column {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.dashboard .row-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.dashboard .file-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.dashboard .file-name strong {
+    font-weight: 600;
+    color: var(--hub-text);
+}
+
+.dashboard .file-name span {
+    display: block;
+    color: var(--hub-muted);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dashboard .row-actions a.btn {
+    text-decoration: none;
+}
+
+.dashboard #hub-reports-table thead th[data-sort-key] {
+    cursor: pointer;
+    user-select: none;
+}
+
+.dashboard #hub-reports-table thead th[data-sort-key]::after {
+    content: "\2195";
+    margin-left: 7px;
+    opacity: .35;
+    font-size: 11px;
+}
+
+.dashboard #hub-reports-table thead th[data-sort="asc"]::after {
+    content: "\2191";
+    opacity: 1;
+    color: var(--hub-primary);
+}
+
+.dashboard #hub-reports-table thead th[data-sort="desc"]::after {
+    content: "\2193";
+    opacity: 1;
+    color: var(--hub-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Toasts
+   -------------------------------------------------------------------------- */
+
+.toast-stack {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: min(380px, calc(100vw - 40px));
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--hub-border);
+    border-left: 3px solid var(--hub-primary);
+    border-radius: 8px;
+    background: var(--hub-surface);
+    color: var(--hub-text);
+    font-size: 13px;
+    box-shadow: var(--hub-shadow);
+    animation: hub-toast-in .18s ease-out;
+}
+
+.toast.is-success { border-left-color: var(--hub-success); }
+.toast.is-warning { border-left-color: var(--hub-warning); }
+.toast.is-error { border-left-color: var(--hub-danger); }
+
+@keyframes hub-toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------
+   Visionneuse de journal
+   -------------------------------------------------------------------------- */
+
+.log-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(1, 4, 9, 0.72);
+    backdrop-filter: blur(3px);
+}
+
+.log-viewer[hidden] {
+    display: none;
+}
+
+.log-viewer-box {
+    width: min(900px, 100%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--hub-border);
+    border-radius: var(--hub-radius);
+    background: var(--hub-card);
+    box-shadow: var(--hub-shadow);
+    overflow: hidden;
+}
+
+.log-viewer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--hub-surface);
+    border-bottom: 1px solid var(--hub-border);
+}
+
+.log-viewer-head h2 {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--hub-primary);
+}
+
+.log-viewer .console {
+    max-height: none;
+    flex: 1 1 auto;
+    border: 0;
+    border-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive et impression
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+    .hub-brand h1 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .dashboard .hub-header {
+        align-items: flex-start;
+    }
+
+    .hub-actions {
+        width: 100%;
+    }
+
+    .hub-actions .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+        padding: 14px;
+    }
+
+    .dashboard .row-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media print {
+    .dashboard .hub-actions,
+    .dashboard .toolbar,
+    .dashboard .actions-column,
+    .dashboard .row-actions,
+    .toast-stack {
+        display: none !important;
+    }
+
+    body.dashboard {
+        background: #FFFFFF;
+    }
+}

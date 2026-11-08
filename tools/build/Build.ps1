@@ -166,12 +166,15 @@ else {
 }
 
 Write-Host ''
-Write-Host '=== [5/5] Framework de rapport (assets) ===' -ForegroundColor Cyan
+Write-Host '=== [5/5] Framework de rapport et dashboard (assets) ===' -ForegroundColor Cyan
 $requiredAssets = @(
     'assets\css\report.css'
+    'assets\css\dashboard.css'
     'assets\js\report.js'
+    'assets\js\dashboard.js'
     'assets\js\chart.umd.min.js'
     'assets\templates\report.html'
+    'assets\templates\dashboard.html'
 )
 $missingAssets = 0
 foreach ($asset in $requiredAssets) {

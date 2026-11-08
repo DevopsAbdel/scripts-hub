@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>scripts-hub — Console</title>
+<style>
+{{CSS}}
+</style>
+</head>
+<body class="dashboard" data-version="{{VERSION}}">
+<header class="hub-header">
+  <div class="hub-identity">
+    <div class="hub-brand">
+      <span class="hub-brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>scripts-hub<span class="hub-brand-suffix">console</span></h1>
+        <p class="hub-subtitle">Pilotage local des scripts, rapports et journaux</p>
+      </div>
+    </div>
+    <div class="hub-meta">
+      <span>Serveur : <strong id="hub-host">localhost</strong></span>
+      <span>Machine : <strong>{{MACHINE}}</strong></span>
+      <span>Opérateur : <strong>{{USER}}</strong></span>
+      <span>Version : <strong>{{VERSION}}</strong></span>
+      <span>Page générée le <strong>{{GENERATED_AT}}</strong></span>
+    </div>
+  </div>
+  <div class="hub-actions">
+    <button type="button" class="btn" id="hub-refresh" title="Recharger l'état (R)">Actualiser</button>
+    <button type="button" class="btn btn-danger-ghost" id="hub-stop" title="Arrêter le serveur local">Arrêter</button>
+  </div>
+</header>
+
+<main>
+  <section class="kpi-grid" id="hub-kpis" aria-label="Indicateurs du hub"></section>
+
+  <section class="card run-card" id="hub-run-panel" hidden>
+    <div class="card-head">
+      <h2>Exécution en cours</h2>
+      <span class="run-status" id="hub-run-status">—</span>
+    </div>
+    <div class="run-body">
+      <div class="run-meta" id="hub-run-meta"></div>
+      <pre class="console" id="hub-run-output" aria-live="polite"></pre>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Scripts disponibles</h2>
+      <span class="hint">Exécution contrôlée par liste blanche</span>
+    </div>
+    <div class="action-grid" id="hub-actions"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Rapports générés</h2>
+      <span class="hint" id="hub-reports-hint"></span>
+    </div>
+    <div class="toolbar toolbar-inline" role="search">
+      <div class="search-field">
+        <input type="search" id="hub-search" placeholder="Filtrer les rapports (nom, type, date)…" aria-label="Filtrer les rapports">
+      </div>
+      <span class="result-count" id="hub-count"></span>
+    </div>
+    <div class="table-wrap">
+      <table class="grid" id="hub-reports-table">
+        <thead>
+          <tr>
+            <th data-sort-key="Name" tabindex="0" role="columnheader" aria-sort="none">Rapport</th>
+            <th data-sort-key="Type" tabindex="0" role="columnheader" aria-sort="none">Format</th>
+            <th data-sort-key="Date" tabindex="0" role="columnheader" aria-sort="none">Date</th>
+            <th data-sort-key="Size" tabindex="0" role="columnheader" aria-sort="none">Taille</th>
+            <th data-sort-key="Modified" tabindex="0" role="columnheader" aria-sort="none">Modifié</th>
+            <th class="actions-column">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="hub-reports-body">
+          <tr><td colspan="6" class="empty">Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Journaux récents</h2>
+      <span class="hint">25 derniers fichiers</span>
+    </div>
+    <div class="table-wrap">
+      <table class="grid" id="hub-logs-table">
+        <thead>
+          <tr>
+            <th>Journal</th>
+            <th>Taille</th>
+            <th>Modifié</th>
+            <th class="actions-column">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="hub-logs-body">
+          <tr><td colspan="4" class="empty">Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="hub-footer">
+  scripts-hub · dashboard local hors ligne · API loopback uniquement
+</footer>
+
+<div class="log-viewer" id="hub-log-viewer" hidden>
+  <div class="log-viewer-box" role="dialog" aria-modal="true" aria-labelledby="hub-log-title">
+    <div class="log-viewer-head">
+      <h2 id="hub-log-title">Journal</h2>
+      <button type="button" class="btn btn-ghost" id="hub-log-close">Fermer</button>
+    </div>
+    <pre class="console" id="hub-log-content"></pre>
+  </div>
+</div>
+
+<div class="toast-stack" id="hub-toast" aria-live="polite"></div>
+
+<script>
+{{JS}}
+</script>
+</body>
+</html>

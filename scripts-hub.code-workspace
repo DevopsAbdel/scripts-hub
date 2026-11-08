@@ -88,6 +88,15 @@
         "problemMatcher": []
       },
       {
+        "label": "dashboard",
+        "detail": "Dashboard web local (http://localhost:8080)",
+        "type": "shell",
+        "command": "pwsh",
+        "args": ["-NoLogo", "-NoProfile", "-File", "${workspaceFolder}/src/Dashboard/Start-HubDashboard.ps1"],
+        "isBackground": false,
+        "problemMatcher": []
+      },
+      {
         "label": "environment-audit",
         "detail": "Audit de l'environnement d'exécution",
         "type": "shell",
