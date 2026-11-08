@@ -111,7 +111,59 @@ try {
             'Volumes fixes' = @($inventory.Volumes)
         }
 
-        $htmlPath = New-HubHtmlReport -Title 'Inventaire système' -Subtitle $inventory.ComputerName -Sections $sections -Path $htmlPath
+        $memoryUsedGB = [math]::Round([double]$inventory.TotalMemoryGB - [double]$inventory.FreeMemoryGB, 1)
+        if ($memoryUsedGB -lt 0) {
+            $memoryUsedGB = 0
+        }
+
+        $freeMemoryTone = 'success'
+        if ([double]$inventory.TotalMemoryGB -gt 0) {
+            $freeMemoryPercent = ([double]$inventory.FreeMemoryGB / [double]$inventory.TotalMemoryGB) * 100
+            if ($freeMemoryPercent -lt 10) {
+                $freeMemoryTone = 'danger'
+            }
+            elseif ($freeMemoryPercent -lt 25) {
+                $freeMemoryTone = 'warning'
+            }
+        }
+
+        $criticalVolumes = @($inventory.Volumes | Where-Object { $_.Health -eq 'Critique' }).Count
+        $volumeTone = 'success'
+        if ($criticalVolumes -gt 0) {
+            $volumeTone = 'danger'
+        }
+
+        $kpi = @(
+            @{ Label = 'Machine'; Value = $inventory.ComputerName; Tone = 'primary' }
+            @{ Label = 'Système'; Value = $inventory.OperatingSystem }
+            @{ Label = 'Mémoire totale'; Value = ('{0} Go' -f $inventory.TotalMemoryGB) }
+            @{ Label = 'Mémoire libre'; Value = ('{0} Go' -f $inventory.FreeMemoryGB); Tone = $freeMemoryTone }
+            @{ Label = 'Uptime'; Value = ('{0} j' -f $inventory.UptimeDays) }
+            @{ Label = 'Volumes critiques'; Value = $criticalVolumes; Tone = $volumeTone }
+        )
+
+        $charts = @(
+            @{
+                Id     = 'chart-volumes'
+                Title  = 'Occupation des volumes (%)'
+                Type   = 'bar'
+                Label  = 'Occupation (%)'
+                Labels = @($inventory.Volumes | ForEach-Object { $_.Drive })
+                Values = @($inventory.Volumes | ForEach-Object { $_.UsedPercent })
+                Color  = 'primary'
+            }
+            @{
+                Id     = 'chart-memory'
+                Title  = 'Mémoire (Go)'
+                Type   = 'doughnut'
+                Label  = 'Mémoire'
+                Labels = @('Utilisée', 'Libre')
+                Values = @($memoryUsedGB, $inventory.FreeMemoryGB)
+                Color  = 'primary'
+            }
+        )
+
+        $htmlPath = New-HubHtmlReport -Title 'Inventaire système' -Subtitle $inventory.ComputerName -Sections $sections -Path $htmlPath -Kpi $kpi -Charts $charts
         Write-HubLog -Message ('Rapport HTML : {0}' -f $htmlPath) -Path $context.LogPath
     }
 

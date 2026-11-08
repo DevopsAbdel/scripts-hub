@@ -26,6 +26,12 @@
 .PARAMETER OutputDirectory
     Répertoire de destination. Par défaut : reports\html.
 
+.PARAMETER Kpi
+    Cartes KPI optionnelles (Label, Value, Tone).
+
+.PARAMETER Charts
+    Graphiques optionnels (Id, Title, Type, Label, Labels, Values, Color).
+
 .EXAMPLE
     PS> Get-Service | Select-Object -First 10 | .\src\Reporting\New-HTMLReport.ps1 -Title 'Services' -Name 'Services'
 
@@ -56,7 +62,13 @@ param(
 
     [string]$OutputPath,
 
-    [string]$OutputDirectory
+    [string]$OutputDirectory,
+
+    [AllowNull()]
+    [object[]]$Kpi,
+
+    [AllowNull()]
+    [object[]]$Charts
 )
 
 begin {
@@ -109,7 +121,7 @@ end {
         $targetPath = Get-HubReportPath -Name $Name -Format 'html' -Root $hubRoot
     }
 
-    $reportPath = New-HubHtmlReport -Title $Title -Sections ([ordered]@{ $SectionTitle = $items.ToArray() }) -Path $targetPath
+    $reportPath = New-HubHtmlReport -Title $Title -Sections ([ordered]@{ $SectionTitle = $items.ToArray() }) -Path $targetPath -Kpi $Kpi -Charts $Charts
     Write-HubLog -Message ('Rapport HTML : {0}' -f $reportPath)
 
     $reportPath

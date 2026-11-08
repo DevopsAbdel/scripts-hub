@@ -111,7 +111,16 @@ Verbes autorisés uniquement (`Get-Verb`). Contrôle automatique possible via
 
 ## 7. Rapports
 
-- HTML : document autonome, CSS embarqué, aucune ressource distante.
+- HTML : document autonome, aucune ressource distante, utilisable hors ligne.
+- Framework unique : `assets/templates/report.html`, `assets/css/report.css`
+  et `assets/js/report.js` sont inlinés à la génération.
+- Dark mode par défaut, palette imposée :
+  `#0D1117` (fond), `#161B22` (surface), `#1F2630` (carte),
+  `#58A6FF` (primaire), `#3FB950` (succès), `#D29922` (avertissement),
+  `#F85149` (danger), `#F0F6FC` (texte).
+- Fonctionnalités obligatoires : cartes KPI, recherche instantanée, tri des
+  colonnes, export CSV par tableau, export JSON global, graphiques Chart.js,
+  impression PDF.
 - CSV : séparateur `;`, UTF-8 BOM, en-tête explicite.
 - JSON : UTF-8 BOM, profondeur explicite, structure stable.
 - Échappement HTML obligatoire de toute valeur dynamique.

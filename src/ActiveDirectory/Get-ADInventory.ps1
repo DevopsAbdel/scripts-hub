@@ -117,7 +117,42 @@ try {
             'Domaine' = $inventory
         }
 
-        $htmlPath = New-HubHtmlReport -Title 'Inventaire Active Directory' -Subtitle $inventory.Domain -Sections $sections -Path $htmlPath
+        $usersDisabled = [int]$inventory.UsersTotal - [int]$inventory.UsersEnabled
+        if ($usersDisabled -lt 0) {
+            $usersDisabled = 0
+        }
+
+        $kpi = @(
+            @{ Label = 'Domaine'; Value = $inventory.Domain; Tone = 'primary' }
+            @{ Label = 'Utilisateurs'; Value = $inventory.UsersTotal }
+            @{ Label = 'Utilisateurs actifs'; Value = $inventory.UsersEnabled; Tone = 'success' }
+            @{ Label = 'Ordinateurs'; Value = $inventory.ComputersTotal }
+            @{ Label = 'Groupes'; Value = $inventory.GroupsTotal }
+            @{ Label = 'Unités d''organisation'; Value = $inventory.OrganizationalUnits }
+        )
+
+        $charts = @(
+            @{
+                Id     = 'chart-ad-objects'
+                Title  = 'Objets Active Directory'
+                Type   = 'bar'
+                Label  = 'Objets'
+                Labels = @('Utilisateurs', 'Ordinateurs', 'Groupes', 'OU')
+                Values = @($inventory.UsersTotal, $inventory.ComputersTotal, $inventory.GroupsTotal, $inventory.OrganizationalUnits)
+                Color  = 'primary'
+            }
+            @{
+                Id     = 'chart-ad-users'
+                Title  = 'Comptes utilisateurs'
+                Type   = 'doughnut'
+                Label  = 'Utilisateurs'
+                Labels = @('Actifs', 'Désactivés')
+                Values = @($inventory.UsersEnabled, $usersDisabled)
+                Color  = 'success'
+            }
+        )
+
+        $htmlPath = New-HubHtmlReport -Title 'Inventaire Active Directory' -Subtitle $inventory.Domain -Sections $sections -Path $htmlPath -Kpi $kpi -Charts $charts
         Write-HubLog -Message ('Rapport HTML : {0}' -f $htmlPath) -Path $context.LogPath
     }
 

@@ -35,7 +35,7 @@
 param(
     [string]$Root,
 
-    [string[]]$Extension = @('.ps1', '.psm1', '.psd1', '.md', '.json', '.yml', '.yaml', '.csv', '.html', '.css', '.txt', '.xml', '.config', '.code-workspace'),
+    [string[]]$Extension = @('.ps1', '.psm1', '.psd1', '.md', '.json', '.yml', '.yaml', '.csv', '.html', '.css', '.js', '.txt', '.xml', '.config', '.code-workspace'),
 
     [switch]$PassThru
 )

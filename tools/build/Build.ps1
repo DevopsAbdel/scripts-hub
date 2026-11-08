@@ -73,7 +73,7 @@ function Test-FileConformance {
 }
 
 Write-Host ''
-Write-Host '=== [1/4] Conformité encodage UTF-8 BOM ===' -ForegroundColor Cyan
+Write-Host '=== [1/5] Conformité encodage UTF-8 BOM ===' -ForegroundColor Cyan
 $conformance = Test-FileConformance -Root $hubRoot
 foreach ($item in $conformance) {
     if (-not $item.HasBom) {
@@ -83,7 +83,7 @@ foreach ($item in $conformance) {
 Write-Host ('Fichiers contrôlés : {0} / BOM manquants : {1}' -f $conformance.Count, $failures.Count)
 
 Write-Host ''
-Write-Host '=== [2/4] En-têtes d''aide obligatoires ===' -ForegroundColor Cyan
+Write-Host '=== [2/5] En-têtes d''aide obligatoires ===' -ForegroundColor Cyan
 $scriptsToCheck = Get-ChildItem -LiteralPath $hubRoot -Recurse -File -Include '*.ps1', '*.psm1' -ErrorAction Stop | Where-Object {
     $_.FullName -notlike '*\.git\*'
 }
@@ -100,7 +100,7 @@ foreach ($script in $scriptsToCheck) {
 Write-Host ('Fichiers contrôlés : {0} / en-têtes incomplets : {1}' -f $scriptsToCheck.Count, $headerFailures)
 
 Write-Host ''
-Write-Host '=== [3/4] Analyse statique PSScriptAnalyzer ===' -ForegroundColor Cyan
+Write-Host '=== [3/5] Analyse statique PSScriptAnalyzer ===' -ForegroundColor Cyan
 if ($SkipAnalyzer) {
     Write-Host 'Analyse ignorée (-SkipAnalyzer).' -ForegroundColor Yellow
 }
@@ -141,7 +141,7 @@ else {
 }
 
 Write-Host ''
-Write-Host '=== [4/4] Tests Pester ===' -ForegroundColor Cyan
+Write-Host '=== [4/5] Tests Pester ===' -ForegroundColor Cyan
 if ($SkipTests) {
     Write-Host 'Tests ignorés (-SkipTests).' -ForegroundColor Yellow
 }
@@ -164,6 +164,24 @@ else {
         Write-Host ('Tests : {0} réussis / {1} échoués' -f $testResult.PassedCount, $testResult.FailedCount)
     }
 }
+
+Write-Host ''
+Write-Host '=== [5/5] Framework de rapport (assets) ===' -ForegroundColor Cyan
+$requiredAssets = @(
+    'assets\css\report.css'
+    'assets\js\report.js'
+    'assets\js\chart.umd.min.js'
+    'assets\templates\report.html'
+)
+$missingAssets = 0
+foreach ($asset in $requiredAssets) {
+    $assetPath = Join-Path -Path $hubRoot -ChildPath $asset
+    if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
+        $failures.Add(('Ressource de rapport manquante : {0}' -f $assetPath))
+        $missingAssets++
+    }
+}
+Write-Host ('Ressources contrôlées : {0} / manquantes : {1}' -f $requiredAssets.Count, $missingAssets)
 
 $duration = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 2)
 

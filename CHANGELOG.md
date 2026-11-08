@@ -7,6 +7,24 @@ versionnement suit [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Unreleased]
 
+### Added
+
+- Framework de rapport unifié dans `assets/` : template HTML, thème sombre,
+  interactions JavaScript et Chart.js 4.4.7 embarqué (hors ligne).
+- Rapports HTML : cartes KPI, recherche instantanée, tri des colonnes,
+  export CSV par tableau, export JSON global, impression PDF.
+- Cartes KPI et graphiques dans les scripts d'inventaire système, de posture
+  de sécurité et d'inventaire Active Directory.
+- `tools/maintenance/Initialize-HubStructure.ps1` : synchronisation idempotente
+  de l'arborescence cible.
+
+### Changed
+
+- `New-HubHtmlReport` consomme désormais `assets/templates/report.html` et
+  inline CSS, JavaScript, Chart.js et les données JSON.
+- `Build.ps1` vérifie la présence des ressources du framework de rapport.
+- `Set-FileEncoding.ps1` normalise également les fichiers `.js`.
+
 ### Planned
 
 - Inventaire Active Directory et Microsoft 365 enrichis.

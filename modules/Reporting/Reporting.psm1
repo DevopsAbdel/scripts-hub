@@ -155,6 +155,9 @@ function ConvertTo-HubHtmlTable {
     .PARAMETER Data
         Données à rendre.
 
+    .PARAMETER TableId
+        Identifiant HTML du tableau de données (tri et export CSV).
+
     .OUTPUTS
         System.String
     #>
@@ -162,7 +165,9 @@ function ConvertTo-HubHtmlTable {
     [OutputType([string])]
     param(
         [AllowNull()]
-        [object]$Data
+        [object]$Data,
+
+        [string]$TableId
     )
 
     if ($null -eq $Data) {
@@ -217,8 +222,14 @@ function ConvertTo-HubHtmlTable {
         $propertyNames.Add('Valeur')
     }
 
+    $tableAttributes = ''
+    if (-not [string]::IsNullOrWhiteSpace($TableId)) {
+        $safeTableId = $TableId -replace '[^\w\-]', '_'
+        $tableAttributes = ' id="{0}"' -f $safeTableId
+    }
+
     $builder = New-Object System.Text.StringBuilder
-    [void]$builder.Append('<table class="grid"><thead><tr>')
+    [void]$builder.Append(('<table class="grid" data-sortable{0}><thead><tr>' -f $tableAttributes))
     foreach ($name in $propertyNames) {
         [void]$builder.Append(('<th>{0}</th>' -f (ConvertTo-HubHtmlText -Value $name)))
     }
@@ -242,15 +253,173 @@ function ConvertTo-HubHtmlTable {
     return $builder.ToString()
 }
 
+function Get-HubReportAsset {
+    <#
+    .SYNOPSIS
+        Résout le chemin d'une ressource du framework de rapport.
+
+    .PARAMETER RelativePath
+        Chemin relatif à la racine du dépôt, par exemple assets\css\report.css.
+
+    .OUTPUTS
+        System.String
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$RelativePath
+    )
+
+    $assetPath = Join-Path -Path (Get-HubRoot) -ChildPath $RelativePath
+    if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
+        throw ('Ressource de rapport introuvable : {0}. Vérifiez le répertoire assets.' -f $assetPath)
+    }
+
+    return $assetPath
+}
+
+function ConvertTo-HubJsonLiteral {
+    <#
+    .SYNOPSIS
+        Sérialise une valeur en JSON sûr pour une insertion dans un script HTML.
+
+    .PARAMETER Value
+        Valeur à sérialiser.
+
+    .PARAMETER Depth
+        Profondeur de sérialisation.
+
+    .OUTPUTS
+        System.String
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()]
+        [object]$Value,
+
+        [ValidateRange(1, 100)]
+        [int]$Depth = 10
+    )
+
+    if ($null -eq $Value) {
+        return 'null'
+    }
+
+    $json = ConvertTo-Json -InputObject $Value -Depth $Depth -Compress
+    if ([string]::IsNullOrWhiteSpace($json)) {
+        return 'null'
+    }
+
+    return ($json -replace '</', '<\/')
+}
+
+function New-HubKpiMarkup {
+    <#
+    .SYNOPSIS
+        Construit le balisage des cartes KPI.
+
+    .PARAMETER Kpi
+        Collection d'objets comportant Label, Value et, optionnellement, Tone
+        (primary, success, warning, danger).
+
+    .OUTPUTS
+        System.String
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()]
+        [object[]]$Kpi
+    )
+
+    if ($null -eq $Kpi -or $Kpi.Count -eq 0) {
+        return [string]::Empty
+    }
+
+    $builder = New-Object System.Text.StringBuilder
+    foreach ($item in $Kpi) {
+        if ($null -eq $item) {
+            continue
+        }
+
+        $label = ConvertTo-HubHtmlText -Value (Get-HubPropertyValue -Object $item -Name 'Label')
+        $value = ConvertTo-HubHtmlText -Value (Get-HubPropertyValue -Object $item -Name 'Value')
+        $tone = ([string](Get-HubPropertyValue -Object $item -Name 'Tone')).ToLowerInvariant()
+
+        $cardClass = 'kpi'
+        $valueClass = 'kpi-value'
+        switch ($tone) {
+            'success' { $cardClass = 'kpi kpi-success'; $valueClass = 'kpi-value tone-success' }
+            'warning' { $cardClass = 'kpi kpi-warning'; $valueClass = 'kpi-value tone-warning' }
+            'danger' { $cardClass = 'kpi kpi-danger'; $valueClass = 'kpi-value tone-danger' }
+            'primary' { $cardClass = 'kpi kpi-primary'; $valueClass = 'kpi-value tone-primary' }
+        }
+
+        [void]$builder.AppendLine(('<article class="{0}"><span class="kpi-label">{1}</span><span class="{2}">{3}</span></article>' -f $cardClass, $label, $valueClass, $value))
+    }
+
+    return $builder.ToString()
+}
+
+function New-HubChartMarkup {
+    <#
+    .SYNOPSIS
+        Construit le balisage des cartes de graphiques.
+
+    .PARAMETER Charts
+        Collection de définitions comportant Id et Title.
+
+    .OUTPUTS
+        System.String
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [AllowNull()]
+        [object[]]$Charts
+    )
+
+    if ($null -eq $Charts -or $Charts.Count -eq 0) {
+        return [string]::Empty
+    }
+
+    $builder = New-Object System.Text.StringBuilder
+    foreach ($chart in $Charts) {
+        if ($null -eq $chart) {
+            continue
+        }
+
+        $id = [string](Get-HubPropertyValue -Object $chart -Name 'Id')
+        if ([string]::IsNullOrWhiteSpace($id)) {
+            continue
+        }
+
+        $safeId = $id -replace '[^\w\-]', '_'
+        $title = ConvertTo-HubHtmlText -Value (Get-HubPropertyValue -Object $chart -Name 'Title')
+
+        [void]$builder.AppendLine('<section class="card chart-card">')
+        [void]$builder.AppendLine(('  <div class="card-head"><h2>{0}</h2></div>' -f $title))
+        [void]$builder.AppendLine(('  <div class="chart-wrap"><canvas id="{0}" role="img" aria-label="{1}"></canvas></div>' -f $safeId, $title))
+        [void]$builder.AppendLine('</section>')
+    }
+
+    return $builder.ToString()
+}
+
 function New-HubHtmlReport {
     <#
     .SYNOPSIS
         Crée un rapport HTML autonome et professionnel.
 
     .DESCRIPTION
-        Assemble un document HTML5 autonome (CSS embarqué, aucune ressource
-        externe) à partir de sections nommées. Chaque section est rendue sous
-        forme de tableau clé / valeur ou de tableau de données.
+        Assemble un document HTML5 autonome (CSS, JavaScript et Chart.js
+        embarqués, aucune ressource externe) à partir de sections nommées.
+        Le rendu applique le framework de présentation unifié : dark mode,
+        cartes KPI, recherche instantanée, tri des colonnes, export CSV/JSON
+        et impression PDF.
 
     .PARAMETER Title
         Titre principal du rapport.
@@ -266,6 +435,13 @@ function New-HubHtmlReport {
 
     .PARAMETER Footer
         Texte de pied de page.
+
+    .PARAMETER Kpi
+        Collection de cartes KPI : Label, Value et Tone optionnel.
+
+    .PARAMETER Charts
+        Collection de graphiques : Id, Title, Type (bar, line, doughnut, pie),
+        Label, Labels, Values et Color optionnel.
 
     .EXAMPLE
         PS> New-HubHtmlReport -Title 'Inventaire' -Path .\reports\html\2026-11-08_Inventory.html -Sections ([ordered]@{ 'Système' = $system })
@@ -289,78 +465,93 @@ function New-HubHtmlReport {
         [string]$Path,
 
         [string]$Subtitle,
-        [string]$Footer = 'Rapport généré par scripts-hub'
+        [string]$Footer = 'Rapport généré par scripts-hub',
+
+        [AllowNull()]
+        [object[]]$Kpi,
+
+        [AllowNull()]
+        [object[]]$Charts
     )
 
     $sectionsHtml = New-Object System.Text.StringBuilder
+    $dataPayload = [ordered]@{}
+    $sectionIndex = 0
+
     foreach ($entry in $Sections.GetEnumerator()) {
-        $content = ConvertTo-HubHtmlTable -Data $entry.Value
-        [void]$sectionsHtml.AppendLine(('<section class="card"><h2>{0}</h2>{1}</section>' -f (ConvertTo-HubHtmlText -Value $entry.Key), $content))
+        $sectionIndex++
+        $sectionName = [string]$entry.Key
+        $tableId = 'hub-table-{0}' -f $sectionIndex
+        $content = ConvertTo-HubHtmlTable -Data $entry.Value -TableId $tableId
+        $actions = ''
+
+        if ($content -match 'data-sortable') {
+            $safeSection = $sectionName -replace '[^\w\-]', '_'
+            $actions = ('<button type="button" class="btn btn-ghost export-csv" data-table="{0}" data-section="{1}">Exporter CSV</button>' -f $tableId, $safeSection)
+        }
+
+        [void]$sectionsHtml.AppendLine(('<section class="card"><div class="card-head"><h2>{0}</h2>{1}</div><div class="table-wrap">{2}</div></section>' -f (ConvertTo-HubHtmlText -Value $sectionName), $actions, $content))
+        $dataPayload[$sectionName] = $entry.Value
     }
 
-    $template = @'
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{TITLE}}</title>
-<style>
-  :root { color-scheme: light; }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 0 24px 48px;
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 14px; line-height: 1.5;
-    color: #1f2937; background: #f4f6f9;
-  }
-  header { padding: 32px 0 16px; border-bottom: 3px solid #2563eb; margin-bottom: 24px; }
-  h1 { margin: 0 0 4px; font-size: 26px; color: #0f172a; }
-  .subtitle { margin: 0; color: #4b5563; font-size: 15px; }
-  .meta { margin-top: 12px; color: #6b7280; font-size: 12px; }
-  .meta span { margin-right: 16px; }
-  .card {
-    background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
-    padding: 16px 20px; margin-bottom: 20px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-  }
-  h2 { margin: 0 0 12px; font-size: 16px; color: #1d4ed8; text-transform: uppercase; letter-spacing: .04em; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #eef2f7; vertical-align: top; }
-  thead th { background: #f8fafc; color: #334155; font-weight: 600; white-space: nowrap; border-bottom: 2px solid #e2e8f0; }
-  tbody tr:nth-child(even) { background: #fbfcfe; }
-  table.kv th { width: 30%; color: #475569; font-weight: 600; }
-  td { word-break: break-word; }
-  .empty { color: #6b7280; font-style: italic; margin: 0; }
-  footer { margin-top: 8px; color: #6b7280; font-size: 12px; }
-  @media print {
-    body { background: #ffffff; padding: 0; }
-    .card { break-inside: avoid; box-shadow: none; }
-  }
-</style>
-</head>
-<body>
-<header>
-  <h1>{{TITLE}}</h1>
-  <p class="subtitle">{{SUBTITLE}}</p>
-  <div class="meta"><span>Généré le {{GENERATED}}</span><span>Machine : {{HOST}}</span><span>Opérateur : {{USER}}</span></div>
-</header>
-<main>
-{{SECTIONS}}
-</main>
-<footer>{{FOOTER}}</footer>
-</body>
-</html>
-'@
+    $chartDefinitions = New-Object System.Collections.Generic.List[object]
+    foreach ($chart in @($Charts)) {
+        if ($null -eq $chart) {
+            continue
+        }
+
+        $chartId = [string](Get-HubPropertyValue -Object $chart -Name 'Id')
+        if ([string]::IsNullOrWhiteSpace($chartId)) {
+            continue
+        }
+
+        $chartType = [string](Get-HubPropertyValue -Object $chart -Name 'Type')
+        if ([string]::IsNullOrWhiteSpace($chartType)) {
+            $chartType = 'bar'
+        }
+
+        $chartColor = [string](Get-HubPropertyValue -Object $chart -Name 'Color')
+        if ([string]::IsNullOrWhiteSpace($chartColor)) {
+            $chartColor = 'primary'
+        }
+
+        $chartDefinitions.Add([ordered]@{
+            id     = ($chartId -replace '[^\w\-]', '_')
+            type   = $chartType
+            label  = [string](Get-HubPropertyValue -Object $chart -Name 'Label')
+            labels = @(Get-HubPropertyValue -Object $chart -Name 'Labels')
+            values = @(Get-HubPropertyValue -Object $chart -Name 'Values')
+            color  = $chartColor
+        })
+    }
+
+    $template = [System.IO.File]::ReadAllText((Get-HubReportAsset -RelativePath 'assets\templates\report.html'))
+    $stylesheet = [System.IO.File]::ReadAllText((Get-HubReportAsset -RelativePath 'assets\css\report.css'))
+    $reportScript = [System.IO.File]::ReadAllText((Get-HubReportAsset -RelativePath 'assets\js\report.js'))
+    $chartScript = [System.IO.File]::ReadAllText((Get-HubReportAsset -RelativePath 'assets\js\chart.umd.min.js'))
+
+    $reportName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+    if ([string]::IsNullOrWhiteSpace($reportName)) {
+        $reportName = 'report'
+    }
 
     $generated = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)
-    $document = $template.Replace('{{TITLE}}', (ConvertTo-HubHtmlText -Value $Title))
+    $meta = ('<span>Généré le <strong>{0}</strong></span><span>Machine : <strong>{1}</strong></span><span>Opérateur : <strong>{2}</strong></span>' -f $generated, (ConvertTo-HubHtmlText -Value ([System.Environment]::MachineName)), (ConvertTo-HubHtmlText -Value ([System.Environment]::UserName)))
+
+    $document = $template
+    $document = $document.Replace('{{TITLE}}', (ConvertTo-HubHtmlText -Value $Title))
     $document = $document.Replace('{{SUBTITLE}}', (ConvertTo-HubHtmlText -Value $Subtitle))
-    $document = $document.Replace('{{GENERATED}}', $generated)
-    $document = $document.Replace('{{HOST}}', (ConvertTo-HubHtmlText -Value ([System.Environment]::MachineName)))
-    $document = $document.Replace('{{USER}}', (ConvertTo-HubHtmlText -Value ([System.Environment]::UserName)))
+    $document = $document.Replace('{{META}}', $meta)
+    $document = $document.Replace('{{REPORT_NAME}}', (ConvertTo-HubHtmlText -Value $reportName))
+    $document = $document.Replace('{{KPI}}', (New-HubKpiMarkup -Kpi $Kpi))
+    $document = $document.Replace('{{CHARTS}}', (New-HubChartMarkup -Charts $Charts))
     $document = $document.Replace('{{SECTIONS}}', $sectionsHtml.ToString())
     $document = $document.Replace('{{FOOTER}}', (ConvertTo-HubHtmlText -Value $Footer))
+    $document = $document.Replace('{{CSS}}', $stylesheet)
+    $document = $document.Replace('{{CHARTJS}}', $chartScript)
+    $document = $document.Replace('{{REPORT_JS}}', $reportScript)
+    $document = $document.Replace('{{DATA_JSON}}', (ConvertTo-HubJsonLiteral -Value $dataPayload -Depth 10))
+    $document = $document.Replace('{{CHARTS_JSON}}', (ConvertTo-HubJsonLiteral -Value @($chartDefinitions.ToArray()) -Depth 6))
 
     $parent = Split-Path -Path $Path -Parent
     if (-not [string]::IsNullOrWhiteSpace($parent)) {
@@ -559,6 +750,12 @@ function Export-HubReport {
     .PARAMETER DateStamp
         Date au format yyyy-MM-dd utilisée dans les noms de fichiers.
 
+    .PARAMETER Kpi
+        Cartes KPI transmises au rapport HTML.
+
+    .PARAMETER Charts
+        Graphiques transmis au rapport HTML.
+
     .EXAMPLE
         PS> $data | Export-HubReport -Name 'System_Inventory' -Format All
 
@@ -583,7 +780,13 @@ function Export-HubReport {
 
         [string]$Root,
 
-        [string]$DateStamp = (Get-HubTimestamp -Format 'yyyy-MM-dd')
+        [string]$DateStamp = (Get-HubTimestamp -Format 'yyyy-MM-dd'),
+
+        [AllowNull()]
+        [object[]]$Kpi,
+
+        [AllowNull()]
+        [object[]]$Charts
     )
 
     begin {
@@ -631,7 +834,7 @@ function Export-HubReport {
 
         if ($Format -eq 'Html' -or $Format -eq 'All') {
             $htmlPath = Get-HubReportPath -Name $Name -Format 'html' -DateStamp $DateStamp -Root $Root
-            $paths.Html = New-HubHtmlReport -Title $Title -Sections ([ordered]@{ 'Données' = $data }) -Path $htmlPath
+            $paths.Html = New-HubHtmlReport -Title $Title -Sections ([ordered]@{ 'Données' = $data }) -Path $htmlPath -Kpi $Kpi -Charts $Charts
         }
 
         if ($Format -eq 'Csv' -or $Format -eq 'All') {

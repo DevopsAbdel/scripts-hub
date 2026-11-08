@@ -81,6 +81,31 @@ Describe 'Reporting - New-HubHtmlReport' {
         $content | Should -Not -Match '<script>alert\(1\)</script>'
         $content | Should -Match '&lt;script&gt;'
     }
+
+    It 'applique le framework dark mode et les fonctionnalités interactives' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'framework.html'
+        New-HubHtmlReport -Title 'Framework' -Sections ([ordered]@{ 'Données' = @([pscustomobject]@{ Nom = 'A'; Valeur = 1 }) }) -Path $path -Kpi @(@{ Label = 'Total'; Value = 1; Tone = 'success' }) -Charts @(@{ Id = 'chart-test'; Title = 'Test'; Type = 'bar'; Label = 'Valeur'; Labels = @('A'); Values = @(1); Color = 'primary' }) | Out-Null
+
+        $content = [System.IO.File]::ReadAllText($path)
+        $content | Should -Match '--hub-bg:\s*#0D1117'
+        $content | Should -Match '--hub-primary:\s*#58A6FF'
+        $content | Should -Match 'id="hub-search"'
+        $content | Should -Match 'class="kpi'
+        $content | Should -Match '<canvas id="chart-test"'
+        $content | Should -Match 'class="btn btn-ghost export-csv"'
+        $content | Should -Match 'id="hub-data"'
+        $content | Should -Match 'id="hub-charts-config"'
+        $content | Should -Match 'id="hub-print"'
+    }
+
+    It 'ne référence aucune ressource distante' {
+        $path = Join-Path -Path $TestDrive -ChildPath 'offline.html'
+        New-HubHtmlReport -Title 'Hors ligne' -Sections ([ordered]@{ 'Données' = @([pscustomobject]@{ Nom = 'A' }) }) -Path $path | Out-Null
+
+        $content = [System.IO.File]::ReadAllText($path)
+        $content | Should -Not -Match 'src="https?://'
+        $content | Should -Not -Match 'href="https?://'
+    }
 }
 
 Describe 'Reporting - Export-HubCsv' {

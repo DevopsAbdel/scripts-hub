@@ -74,10 +74,25 @@ avertissement, pas un échec global.
 
 Restitution :
 
-- `New-HubHtmlReport` : document HTML5 autonome, CSS embarqué, échappement strict ;
+- `New-HubHtmlReport` : document HTML5 autonome construit à partir de
+  `assets/` (CSS, JavaScript et Chart.js embarqués, aucune ressource
+  distante). Le rendu applique le framework unifié : dark mode, cartes KPI,
+  recherche instantanée, tri des colonnes, export CSV/JSON et impression PDF ;
 - `Export-HubCsv` : CSV `;` UTF-8 BOM, compatible Excel FR ;
 - `Export-HubJson` : JSON UTF-8 BOM, profondeur contrôlée ;
 - `Export-HubReport` : orchestrateur multi-format.
+
+### `assets/`
+
+Ressources du framework de présentation, lues à la génération puis inlinées
+dans chaque rapport :
+
+| Fichier | Rôle |
+| --- | --- |
+| `assets/templates/report.html` | Squelette HTML à jetons |
+| `assets/css/report.css` | Thème sombre, KPI, tableaux, impression |
+| `assets/js/report.js` | Recherche, tri, exports, impression, graphiques |
+| `assets/js/chart.umd.min.js` | Chart.js 4.x embarqué (hors ligne) |
 
 ## Flux d'exécution d'un script
 

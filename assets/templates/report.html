@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+{{CSS}}
+</style>
+</head>
+<body data-report-name="{{REPORT_NAME}}">
+<header class="hub-header">
+  <div>
+    <h1>{{TITLE}}</h1>
+    <p class="hub-subtitle">{{SUBTITLE}}</p>
+    <div class="hub-meta">{{META}}</div>
+  </div>
+  <div class="hub-actions">
+    <button type="button" class="btn btn-primary" id="hub-export-json">Exporter JSON</button>
+    <button type="button" class="btn" id="hub-print">Imprimer / PDF</button>
+  </div>
+</header>
+
+<section class="kpi-grid" aria-label="Indicateurs cles">
+{{KPI}}
+</section>
+
+<div class="toolbar" role="search">
+  <div class="search-field">
+    <input type="search" id="hub-search" placeholder="Rechercher dans le rapport..." aria-label="Rechercher">
+  </div>
+  <span class="result-count" id="hub-count"></span>
+</div>
+
+<div class="chart-grid">
+{{CHARTS}}
+</div>
+
+<main>
+{{SECTIONS}}
+</main>
+
+<footer class="hub-footer">{{FOOTER}}</footer>
+
+<script id="hub-data" type="application/json">{{DATA_JSON}}</script>
+<script id="hub-charts-config" type="application/json">{{CHARTS_JSON}}</script>
+<script>
+{{CHARTJS}}
+</script>
+<script>
+{{REPORT_JS}}
+</script>
+</body>
+</html>

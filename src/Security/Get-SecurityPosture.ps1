@@ -103,7 +103,82 @@ try {
             'Microsoft Defender'     = $posture.Defender
         }
 
-        $htmlPath = New-HubHtmlReport -Title 'Posture de sécurité locale' -Subtitle $posture.ComputerName -Sections $sections -Path $htmlPath
+        $firewallTotal = @($posture.Firewall).Count
+        $firewallEnabled = @($posture.Firewall | Where-Object { $_.Enabled }).Count
+        $firewallInactive = $firewallTotal - $firewallEnabled
+        $firewallTone = 'success'
+        if ($firewallEnabled -lt $firewallTotal) {
+            $firewallTone = 'danger'
+        }
+
+        $defenderAvailable = $null -ne $posture.Defender
+        $defenderTone = 'warning'
+        $defenderLabel = 'Indisponible'
+        if ($defenderAvailable) {
+            if ($posture.Defender.RealTimeProtectionEnabled) {
+                $defenderTone = 'success'
+                $defenderLabel = 'Temps réel actif'
+            }
+            else {
+                $defenderTone = 'danger'
+                $defenderLabel = 'Temps réel inactif'
+            }
+        }
+
+        $warningTone = 'success'
+        if ($posture.Warnings.Count -gt 0) {
+            $warningTone = 'warning'
+        }
+
+        $kpi = @(
+            @{ Label = 'Machine'; Value = $posture.ComputerName; Tone = 'primary' }
+            @{ Label = 'Administrateurs locaux'; Value = $posture.Administrators.Count }
+            @{ Label = 'Pare-feu actifs'; Value = ('{0} / {1}' -f $firewallEnabled, $firewallTotal); Tone = $firewallTone }
+            @{ Label = 'Profils pare-feu'; Value = $firewallTotal }
+            @{ Label = 'Defender'; Value = $defenderLabel; Tone = $defenderTone }
+            @{ Label = 'Avertissements'; Value = $posture.Warnings.Count; Tone = $warningTone }
+        )
+
+        $charts = @()
+
+        if ($firewallTotal -gt 0) {
+            $charts += @{
+                Id     = 'chart-firewall'
+                Title  = 'Profils pare-feu'
+                Type   = 'doughnut'
+                Label  = 'Profils'
+                Labels = @('Actifs', 'Inactifs')
+                Values = @($firewallEnabled, $firewallInactive)
+                Color  = 'success'
+            }
+        }
+
+        if ($defenderAvailable) {
+            $charts += @{
+                Id     = 'chart-defender'
+                Title  = 'Protections Defender'
+                Type   = 'bar'
+                Label  = 'État (1 = actif)'
+                Labels = @('Antivirus', 'Temps réel')
+                Values = @([int][bool]$posture.Defender.AntivirusEnabled, [int][bool]$posture.Defender.RealTimeProtectionEnabled)
+                Color  = 'success'
+            }
+        }
+
+        if ($posture.Administrators.Count -gt 0) {
+            $adminGroups = @($posture.Administrators | Group-Object -Property ObjectClass)
+            $charts += @{
+                Id     = 'chart-admins'
+                Title  = 'Administrateurs locaux par type'
+                Type   = 'bar'
+                Label  = 'Comptes'
+                Labels = @($adminGroups | ForEach-Object { $_.Name })
+                Values = @($adminGroups | ForEach-Object { $_.Count })
+                Color  = 'warning'
+            }
+        }
+
+        $htmlPath = New-HubHtmlReport -Title 'Posture de sécurité locale' -Subtitle $posture.ComputerName -Sections $sections -Path $htmlPath -Kpi $kpi -Charts $charts
         Write-HubLog -Message ('Rapport HTML : {0}' -f $htmlPath) -Path $context.LogPath
     }
 
