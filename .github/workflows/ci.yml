@@ -1,0 +1,42 @@
+﻿name: build
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Analyse, tests et conformité (PowerShell 7)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Récupération du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installation des modules de développement
+        shell: pwsh
+        run: ./tools/deployment/Install-HubModules.ps1 -Scope CurrentUser
+
+      - name: Build (conformité, analyse statique, tests)
+        shell: pwsh
+        run: ./tools/build/Build.ps1
+
+      - name: Publication des rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports
+          path: reports/**
+          if-no-files-found: ignore
+          retention-days: 14

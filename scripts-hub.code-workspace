@@ -1,0 +1,100 @@
+﻿{
+  "folders": [
+    {
+      "name": "scripts-hub",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.encoding": "utf8bom",
+    "files.eol": "\r\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.exclude": {
+      "**/.git": true,
+      "**/logs": true,
+      "**/reports/archive": true
+    },
+    "search.exclude": {
+      "**/logs": true,
+      "**/reports": true,
+      "**/archive": true
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell 7",
+    "terminal.integrated.profiles.windows": {
+      "PowerShell 7": {
+        "path": "pwsh.exe",
+        "args": ["-NoLogo"],
+        "icon": "terminal-powershell"
+      },
+      "Windows PowerShell 5.1": {
+        "path": "powershell.exe",
+        "args": ["-NoLogo"],
+        "icon": "terminal-powershell"
+      }
+    },
+    "powershell.powerShellDefaultVersion": "PowerShell 7 (x64)",
+    "powershell.codeFormatting.preset": "OTBS",
+    "powershell.codeFormatting.openBraceOnSameLine": true,
+    "powershell.codeFormatting.newLineAfterOpenBrace": true,
+    "powershell.codeFormatting.newLineAfterCloseBrace": true,
+    "powershell.scriptAnalysis.enable": true,
+    "powershell.scriptAnalysis.settingsPath": "config/settings/PSScriptAnalyzerSettings.psd1",
+    "powershell.pester.useLegacyCodeLens": false,
+    "editor.rulers": [100],
+    "[powershell]": {
+      "editor.tabSize": 4,
+      "editor.insertSpaces": true,
+      "editor.formatOnSave": false
+    },
+    "[markdown]": {
+      "editor.tabSize": 2,
+      "files.trimTrailingWhitespace": false
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.powershell",
+      "editorconfig.editorconfig",
+      "eamodio.gitlens",
+      "ms-vscode.hexeditor"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build",
+        "detail": "Analyse statique + tests + conformité",
+        "type": "shell",
+        "command": "pwsh",
+        "args": ["-NoLogo", "-NoProfile", "-File", "${workspaceFolder}/tools/build/Build.ps1"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "test",
+        "detail": "Tests Pester",
+        "type": "shell",
+        "command": "pwsh",
+        "args": ["-NoLogo", "-NoProfile", "-Command", "Invoke-Pester -Path ./tests -Output Detailed"],
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "environment-audit",
+        "detail": "Audit de l'environnement d'exécution",
+        "type": "shell",
+        "command": "pwsh",
+        "args": ["-NoLogo", "-NoProfile", "-File", "${workspaceFolder}/tools/maintenance/Test-Environment.ps1"],
+        "problemMatcher": []
+      }
+    ]
+  }
+}
