@@ -15,6 +15,7 @@ des rapports HTML/CSV/JSON et une base de tests automatisés.
 - [Prérequis](#prérequis)
 - [Installation](#installation)
 - [Utilisation](#utilisation)
+- [Interface locale](#interface-locale)
 - [Exemples](#exemples)
 - [Standards](#standards)
 - [Conventions Git](#conventions-git)
@@ -48,12 +49,14 @@ scripts-hub/
 │   ├── Network/
 │   ├── Security/
 │   ├── Inventory/
+│   ├── Dashboard/
 │   └── Reporting/
 ├── modules/              # Modules PowerShell réutilisables
 │   ├── Common/
 │   ├── Inventory/
 │   ├── Reporting/
 │   ├── Security/
+│   ├── Dashboard/
 │   └── Utilities/
 ├── config/               # Configuration par environnement
 │   ├── environments/
@@ -136,6 +139,28 @@ dépendances absentes et s'arrêtent avec un message explicite.
 
 Chaque script expose `Get-Help <script>.ps1 -Full`.
 
+## Interface locale
+
+Le dépôt inclut un dashboard web local pour piloter l'exécution et consulter
+les livrables sans ligne de commande :
+
+```powershell
+.\src\Dashboard\Start-HubDashboard.ps1
+# Navigateur : http://localhost:8080
+```
+
+Le serveur écoute uniquement sur `localhost`, fonctionne hors ligne et propose :
+
+- des KPI sur les rapports et les scripts disponibles ;
+- le lancement contrôlé des scripts par liste blanche, avec sortie en direct ;
+- le filtre et le tri des rapports, l'ouverture HTML et le téléchargement
+  CSV/JSON ;
+- la consultation des journaux récents ;
+- l'arrêt propre du serveur depuis la page.
+
+Options : `-Port 8090`, `-NoBrowser`, `-RunTimeoutSeconds 300`.
+Guide complet : [`docs/procedures/dashboard.md`](docs/procedures/dashboard.md).
+
 ## Exemples
 
 Sorties générées :
@@ -203,6 +228,7 @@ Invoke-Pester .\tests -Output Detailed
 - [Architecture](docs/architecture/overview.md)
 - [Standards PowerShell](docs/standards/powershell-standards.md)
 - [Prise en main](docs/procedures/getting-started.md)
+- [Dashboard web local](docs/procedures/dashboard.md)
 - [Runbook : contrôle de santé quotidien](docs/runbooks/daily-health-check.md)
 
 ## Licence

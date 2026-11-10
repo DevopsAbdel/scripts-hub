@@ -101,6 +101,16 @@ Réécrit les fichiers texte en UTF-8 BOM / CRLF. Idempotent.
 .\tools\maintenance\Clear-OldReports.ps1 -Days 90
 ```
 
+## 13. Dashboard web local
+
+```powershell
+.\src\Dashboard\Start-HubDashboard.ps1
+```
+
+Ouvre `http://localhost:8080` : KPI, lancement contrôlé des scripts, tri et
+téléchargement des rapports, consultation des journaux. Voir
+[`dashboard.md`](dashboard.md).
+
 ## Dépannage
 
 | Symptôme | Cause probable | Action |

@@ -1,4 +1,4 @@
-@{
+﻿@{
     RootModule        = 'Dashboard.psm1'
     ModuleVersion     = '1.0.0'
     GUID              = 'b6c2d3f4-5a70-4c18-9d2e-7f3a8b1c6e52'

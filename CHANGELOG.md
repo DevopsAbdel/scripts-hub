@@ -17,13 +17,22 @@ versionnement suit [Semantic Versioning](https://semver.org/lang/fr/).
   de sécurité et d'inventaire Active Directory.
 - `tools/maintenance/Initialize-HubStructure.ps1` : synchronisation idempotente
   de l'arborescence cible.
+- Dashboard web local : `modules/Dashboard` et
+  `src/Dashboard/Start-HubDashboard.ps1` (serveur loopback, KPI, exécution
+  contrôlée par liste blanche, tri/filtre des rapports, journaux). Assets
+  dédiés dans `assets/css/dashboard.css`, `assets/js/dashboard.js` et
+  `assets/templates/dashboard.html`.
+- Documentation `docs/procedures/dashboard.md` et tâche VS Code `dashboard`.
 
 ### Changed
 
 - `New-HubHtmlReport` consomme désormais `assets/templates/report.html` et
   inline CSS, JavaScript, Chart.js et les données JSON.
-- `Build.ps1` vérifie la présence des ressources du framework de rapport.
+- `Build.ps1` vérifie la présence des ressources du framework de rapport et du
+  dashboard.
 - `Set-FileEncoding.ps1` normalise également les fichiers `.js`.
+- `Initialize-HubStructure.ps1` synchronise `src/Dashboard` et
+  `modules/Dashboard`.
 
 ### Planned
 
